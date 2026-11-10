@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스쿨버스 (Schoolverse) - 진로 & 학업 RPG</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        rpg: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            accent: '#6366f1',
+                            gold: '#fbbf24',
+                            emerald: '#10b981',
+                            rose: '#f43f5e',
+                            cyan: '#06b6d4',
+                            purple: '#a855f7'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', 'sans-serif'],
+                        pixel: ['"Press Start 2P"', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-effect {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.25);
+        }
+        .glow-gold {
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+        .pixel-border {
+            border: 2px solid #6366f1;
+            box-shadow: 4px 4px 0px #312e81;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-slate-800 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid font-pixel text-xl">S</i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">스쿨버스</h1>
+                    <p class="text-xs text-slate-400 font-medium">SCHOOLVERSE v1.0</p>
+                </div>
+            </div>
+
+            <!-- Header Quick Stats -->
+            <div class="hidden sm:flex items-center space-x-6 bg-slate-900/80 px-4 py-1.5 rounded-full border border-slate-800">
+                <div class="flex items-center space-x-2">
+                    <span class="px-2 py-0.5 text-xs font-bold bg-amber-500/20 text-amber-400 rounded-md border border-amber-500/30">Lv.<span id="header-level">1</span></span>
+                    <span id="header-user-name" class="text-sm font-semibold text-slate-200">플레이어</span>
+                </div>
+                <div class="h-4 w-px bg-slate-800"></div>
+                <div class="flex items-center space-x-1 text-sm font-medium text-emerald-400">
+                    <i class="fa-solid font-pixel text-xs">XP</i>
+                    <span id="header-xp">0</span> / <span id="header-next-xp">100</span>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Buttons -->
+            <nav class="flex items-center space-x-1 sm:space-x-2">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn active px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center space-x-2 transition-all duration-200 bg-indigo-600 text-white">
+                    <i class="fa-solid fa-user"></i>
+                    <span class="hidden md:inline">내 캐릭터</span>
+                </button>
+                <button onclick="switchTab('trpg')" id="nav-trpg" class="tab-btn px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center space-x-2 transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800">
+                    <i class="fa-solid fa-gamepad"></i>
+                    <span class="hidden md:inline">진로 TRPG</span>
+                </button>
+                <button onclick="switchTab('quests')" id="nav-quests" class="tab-btn px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center space-x-2 transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span class="hidden md:inline">루틴/퀘스트</span>
+                </button>
+                <button onclick="switchTab('roadmap')" id="nav-roadmap" class="tab-btn px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center space-x-2 transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <span class="hidden md:inline">진로 가이드</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+        <!-- Banner Alert for Ethics & Mental Health -->
+        <div class="glass-panel border-l-4 border-l-indigo-500 rounded-xl p-4 flex items-center justify-between shadow-lg">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-indigo-500/20 text-indigo-400 rounded-xl">
+                    <i class="fa-solid fa-heart text-lg animate-pulse"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-slate-200">오늘의 멘탈 케어 메시지</h3>
+                    <p id="wellness-quote" class="text-xs text-slate-400 mt-0.5">"남들과 비교하지 않고 어제의 나보다 한 걸음 나아가는 것이 진짜 성장입니다."</p>
+                </div>
+            </div>
+            <button onclick="changeQuote()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold underline px-2 py-1">
+                새 메시지
+            </button>
+        </div>
+
+        <!-- TAB 1: DASHBOARD (캐릭터 & 스탯) -->
+        <section id="tab-dashboard" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Profile & Level Card -->
+                <div class="glass-panel rounded-2xl p-6 flex flex-col items-center text-center justify-between border border-slate-800 relative overflow-hidden">
+                    <div class="absolute -top-12 -right-12 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    
+                    <div class="w-full flex justify-between items-center mb-4">
+                        <span class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">고등학생 아바타</span>
+                        <button onclick="openEditNameModal()" class="text-xs text-slate-400 hover:text-white transition">
+                            <i class="fa-solid fa-pen-to-square"></i> 이름 변경
+                        </button>
+                    </div>
+
+                    <!-- Character Avatar Icon -->
+                    <div class="relative my-4">
+                        <div class="w-28 h-28 rounded-2xl bg-slate-900 border-2 border-indigo-500/50 flex items-center justify-center text-5xl shadow-xl shadow-indigo-500/20 text-indigo-400">
+                            <i id="avatar-icon" class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <div class="absolute -bottom-2 -right-2 bg-amber-500 text-slate-950 font-extrabold text-xs px-2.5 py-1 rounded-lg shadow">
+                            Lv.<span id="dash-level">1</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <h2 id="dash-name" class="text-xl font-bold text-slate-100">김스쿨</h2>
+                        <p id="dash-title" class="text-xs text-slate-400 mt-1">꿈을 찾아 탐험하는 학생</p>
+                    </div>
+
+                    <!-- XP Bar -->
+                    <div class="w-full mt-6 space-y-2">
+                        <div class="flex justify-between text-xs font-semibold">
+                            <span class="text-slate-400">경험치 (XP)</span>
+                            <span class="text-indigo-400"><span id="dash-xp">0</span> / <span id="dash-next-xp">100</span> XP</span>
+                        </div>
+                        <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5 border border-slate-800">
+                            <div id="dash-xp-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Dashboard -->
+                <div class="lg:col-span-2 glass-panel rounded-2xl p-6 border border-slate-800 flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-slate-200 flex items-center space-x-2">
+                            <i class="fa-solid fa-chart-simple text-indigo-400"></i>
+                            <span>현재 역량 스탯 (Stat)</span>
+                        </h3>
+                        <span class="text-xs text-slate-400">TRPG 선택 & 퀘스트로 상승합니다</span>
+                    </div>
+
+                    <!-- Stat Bars Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Stat 1: 학업 / 내신 -->
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 space-y-2">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="font-semibold text-slate-300 flex items-center space-x-2">
+                                    <i class="fa-solid fa-book-open text-blue-400"></i>
+                                    <span>학업 & 내신</span>
+                                </span>
+                                <span id="stat-academic" class="font-bold text-blue-400 text-base">50</span>
+                            </div>
+                            <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden">
+                                <div id="bar-academic" class="bg-blue-500 h-full rounded-full transition-all duration-500" style="width: 50%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Stat 2: 자격증 / 실무력 -->
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 space-y-2">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="font-semibold text-slate-300 flex items-center space-x-2">
+                                    <i class="fa-solid fa-certificate text-amber-400"></i>
+                                    <span>자격증 & 실무력</span>
+                                </span>
+                                <span id="stat-skill" class="font-bold text-amber-400 text-base">50</span>
+                            </div>
+                            <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden">
+                                <div id="bar-skill" class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: 50%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Stat 3: 루틴 / 체력 -->
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 space-y-2">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="font-semibold text-slate-300 flex items-center space-x-2">
+                                    <i class="fa-solid fa-person-running text-emerald-400"></i>
+                                    <span>루틴 & 체력</span>
+                                </span>
+                                <span id="stat-health" class="font-bold text-emerald-400 text-base">50</span>
+                            </div>
+                            <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden">
+                                <div id="bar-health" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 50%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Stat 4: 멘탈 / 회복탄력성 -->
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 space-y-2">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="font-semibold text-slate-300 flex items-center space-x-2">
+                                    <i class="fa-solid fa-brain text-purple-400"></i>
+                                    <span>멘탈 & 회복력</span>
+                                </span>
+                                <span id="stat-mental" class="font-bold text-purple-400 text-base">50</span>
+                            </div>
+                            <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden">
+                                <div id="bar-mental" class="bg-purple-500 h-full rounded-full transition-all duration-500" style="width: 50%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Career Tendency Recommendation Badge -->
+                    <div class="mt-4 p-4 rounded-xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-xl"></i>
+                            <div>
+                                <span class="text-xs text-indigo-300 font-semibold">현재 분석된 성향 타이틀</span>
+                                <p id="career-recommendation-title" class="text-sm font-bold text-white">균형 잡힌 성장형 탐구자</p>
+                            </div>
+                        </div>
+                        <button onclick="switchTab('roadmap')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition">
+                            진로 보기 &rarr;
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: TRPG SIMULATION (시뮬레이터) -->
+        <section id="tab-trpg" class="hidden space-y-6">
+            <div class="glass-panel rounded-2xl p-6 border border-slate-800 space-y-6">
+                <!-- TRPG Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-2">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-100 flex items-center space-x-2">
+                            <i class="fa-solid fa-dice-d20 text-indigo-400 text-2xl"></i>
+                            <span>AI 진로 선택 시뮬레이션 TRPG</span>
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">고등학교 생활 중 직면하는 다양한 상황에서 최선의 선택을 내려 스탯을 키우세요.</p>
+                    </div>
+                    <span id="trpg-step-badge" class="px-3 py-1 bg-slate-800 text-indigo-400 rounded-full text-xs font-semibold self-start sm:self-auto border border-slate-700">
+                        에피소드 <span id="trpg-current-step">1</span> / <span id="trpg-total-step">5</span>
+                    </span>
+                </div>
+
+                <!-- Scenario Display Card -->
+                <div class="bg-slate-900/90 rounded-xl p-6 border border-slate-800 relative overflow-hidden space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <span id="scenario-tag" class="px-2.5 py-1 text-xs font-bold bg-indigo-500/20 text-indigo-400 rounded-md border border-indigo-500/30">학업 선택</span>
+                        <h3 id="scenario-title" class="text-lg font-bold text-slate-100">중간고사 대비 공부 전략</h3>
+                    </div>
+
+                    <!-- Story Text Box -->
+                    <p id="scenario-description" class="text-sm text-slate-300 leading-relaxed min-h-[60px]">
+                        다음 주부터 중간고사 기간입니다. 친구가 함께 도서관에서 스터디 그룹을 하자고 제안했고, 한편으로는 집에서 자격증 실기 시험 준비도 병행하고 싶습니다. 당신은 어떤 선택을 하시겠습니까?
+                    </p>
+
+                    <!-- Story Illustration Placeholder Icon -->
+                    <div class="w-full h-32 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-center text-4xl text-slate-700">
+                        <i id="scenario-icon" class="fa-solid fa-book-reader"></i>
+                    </div>
+                </div>
+
+                <!-- Choices Container -->
+                <div id="choices-container" class="grid grid-cols-1 gap-3">
+                    <!-- Dynamic Choices rendered here via JS -->
+                </div>
+
+                <!-- Reset Story Button -->
+                <div class="flex justify-end pt-2">
+                    <button onclick="resetTRPG()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>시나리오 처음부터 다시 시작</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: QUEST & DAILY ROUTINE TRACKER -->
+        <section id="tab-quests" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Add New Quest Form -->
+                <div class="glass-panel rounded-2xl p-6 border border-slate-800 h-fit space-y-4">
+                    <h3 class="text-lg font-bold text-slate-200 flex items-center space-x-2">
+                        <i class="fa-solid fa-plus-circle text-emerald-400"></i>
+                        <span>새 습관 / 퀘스트 등록</span>
+                    </h3>
+
+                    <form id="add-quest-form" onsubmit="handleAddQuest(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">퀘스트 이름</label>
+                            <input type="text" id="quest-title-input" placeholder="예: 컴활 실기 30분 연습" required 
+                                class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">주요 스탯 분야</label>
+                            <select id="quest-category-input" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+                                <option value="academic">학업 & 내신 (+학업 스탯)</option>
+                                <option value="skill">자격증 & 실무력 (+실무 스탯)</option>
+                                <option value="health">루틴 & 체력 (+체력 스탯)</option>
+                                <option value="mental">멘탈 & 회복력 (+멘탈 스탯)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">보상 경험치 (XP)</label>
+                            <input type="number" id="quest-xp-input" min="5" max="50" value="15" required 
+                                class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-emerald-600/20">
+                            퀘스트 추가하기
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Active Quests List -->
+                <div class="lg:col-span-2 glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h3 class="text-lg font-bold text-slate-200 flex items-center space-x-2">
+                            <i class="fa-solid fa-scroll text-amber-400"></i>
+                            <span>오늘의 퀘스트 목록</span>
+                        </h3>
+                        <span id="quest-count" class="text-xs text-slate-400 font-semibold">완료 0 / 전체 0</span>
+                    </div>
+
+                    <div id="quest-list-container" class="space-y-3">
+                        <!-- Quests inserted via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: ROADMAP & CAREER GUIDANCE -->
+        <section id="tab-roadmap" class="hidden space-y-6">
+            <div class="glass-panel rounded-2xl p-6 border border-slate-800 space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-100 flex items-center space-x-2">
+                        <i class="fa-solid fa-map-location-dot text-indigo-400 text-2xl"></i>
+                        <span>현장 실무 & 진로 로드맵 가이드</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">고등학교 졸업 후 진학 및 취업 현장에 맞춰 검증된 자격증과 커리어 패스를 확인하세요.</p>
+                </div>
+
+                <!-- Career Track Filter Tabs -->
+                <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
+                    <button onclick="filterRoadmap('all')" class="roadmap-filter-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white">전체 보기</button>
+                    <button onclick="filterRoadmap('it')" class="roadmap-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800">IT / AI / 소프트웨어</button>
+                    <button onclick="filterRoadmap('field')" class="roadmap-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800">인테리어 / 기술 현장</button>
+                    <button onclick="filterRoadmap('office')" class="roadmap-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800">사무 / 자격증 전문</button>
+                </div>
+
+                <!-- Roadmap Cards Grid -->
+                <div id="roadmap-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamic Roadmaps via JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-panel border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500">
+        <p>© 2026 스쿨버스 (Schoolverse). 학생들의 긍정적 성장과 진로 설계를 응원합니다.</p>
+    </footer>
+
+    <!-- Name Edit Modal -->
+    <div id="modal-edit-name" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel rounded-2xl border border-slate-700 p-6 max-w-sm w-full space-y-4">
+            <h3 class="text-lg font-bold text-slate-100">플레이어 이름 변경</h3>
+            <input type="text" id="input-new-name" placeholder="새 이름을 입력하세요" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeEditNameModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold">취소</button>
+                <button onclick="savePlayerName()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level Up Modal Notification -->
+    <div id="modal-levelup" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel rounded-2xl border-2 border-amber-500/80 p-8 max-w-md w-full text-center space-y-6 glow-gold">
+            <div class="w-20 h-20 mx-auto rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-4xl border border-amber-500/50">
+                <i class="fa-solid fa-crown animate-bounce"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-black text-amber-400 tracking-wide font-pixel">LEVEL UP!</h2>
+                <p class="text-slate-300 font-semibold mt-2">레벨 <span id="levelup-lvl-num" class="text-white font-bold">2</span> 달성을 축하합니다!</p>
+                <p class="text-xs text-slate-400 mt-1">당신의 노력으로 캐릭터 역량이 크게 향상되었습니다.</p>
+            </div>
+            <button onclick="closeLevelupModal()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-xl text-sm transition shadow-lg shadow-amber-500/20">
+                멋져요! 계속하기
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Web Audio API Synth Sound Effects ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'complete') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            } else if (type === 'levelup') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(554.37, now + 0.1);
+                osc.frequency.setValueAtTime(659.25, now + 0.2);
+                osc.frequency.setValueAtTime(880, now + 0.3);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            }
+        }
+
+        // --- State Management ---
+        let player = {
+            name: "김스쿨",
+            title: "꿈을 찾아 탐험하는 고등학생",
+            level: 1,
+            xp: 0,
+            nextXp: 100,
+            stats: {
+                academic: 50, // 학업/내신
+                skill: 50,    // 자격증/실무력
+                health: 50,   // 루틴/체력
+                mental: 50    // 멘탈/회복력
+            }
+        };
+
+        // Wellness Quotes List
+        const wellnessQuotes = [
+            "남들과 비교하지 않고 어제의 나보다 한 걸음 나아가는 것이 진짜 성장입니다.",
+            "작은 루틴의 반복이 훗날 엄청난 실력이 됩니다. 오늘도 수고하셨습니다!",
+            "실수는 실패가 아닌 학습의 과정입니다. 편안한 마음으로 임하세요.",
+            "쉬어가는 것도 성장의 중요한 일부입니다. 멘탈 관리에 신경 써주세요.",
+            "당신의 가능성은 한계가 없습니다. 목표를 향해 천천히 걸어가세요."
+        ];
+
+        // Quests Data
+        let quests = [
+            { id: 1, title: "컴퓨터활용능력 자격증 기출 1회 풀기", category: "skill", xp: 20, done: false },
+            { id: 2, title: "매일 30분 가벼운 러닝 or 스트레칭", category: "health", xp: 15, done: false },
+            { id: 3, title: "시험 대비 주요 과목 노트 정리 1시간", category: "academic", xp: 20, done: false },
+            { id: 4, title: "오늘 하루 감사했던 점 3가지 기록하기", category: "mental", xp: 10, done: false }
+        ];
+
+        // TRPG Scenarios
+        const trpgScenarios = [
+            {
+                id: 1,
+                tag: "학업 & 루틴",
+                icon: "fa-book-reader",
+                title: "중간고사 대비 공부 전략",
+                desc: "다음 주 중간고사를 앞두고 있습니다. 친구가 함께 도서관에서 스터디 그룹을 하자고 제안했고, 한편으로는 집에서 자격증 실기 시험을 미리 준비하고 싶은 마음도 있습니다. 당신의 선택은?",
+                choices: [
+                    {
+                        text: "친구들과 함께 도서관에서 서로 부족한 과목을 가르쳐주며 시험을 대비한다.",
+                        effects: { academic: +10, mental: +5 },
+                        feedback: "협동 학습을 통해 부족한 학업 성취도를 높이고 친구들과 긍정적인 관계를 다졌습니다!"
+                    },
+                    {
+                        text: "나만의 집중 플랜을 세워 집에서 자격증 기출문제와 내신을 나누어 공부한다.",
+                        effects: { skill: +10, academic: +5 },
+                        feedback: "체계적인 시간 배분으로 실무 자격증과 내신 토대를 동시에 닦았습니다!"
+                    },
+                    {
+                        text: "무리하지 않고 충분한 수면과 산책을 병행하며 규칙적인 컨디션으로 시험을 준비한다.",
+                        effects: { health: +10, mental: +10 },
+                        feedback: "지치지 않는 멘탈 관리로 최상의 컨디션을 유지했습니다!"
+                    }
+                ]
+            },
+            {
+                id: 2,
+                tag: "진로 & 자격증",
+                icon: "fa-laptop-code",
+                title: "동아리 박람회 선택의 순간",
+                desc: "교내 동아리 모집 기간입니다. 코딩 & IT 프로젝트 동아리와 인테리어 CAD / 기술 실습 동아리 중 어디에 가입하시겠습니까?",
+                choices: [
+                    {
+                        text: "IT 및 프로그래밍 앱 개발 동아리에 들어가 프로젝트를 진행한다.",
+                        effects: { skill: +15, academic: +5 },
+                        feedback: "최신 소프트웨어 실무 경험을 쌓으며 문제 해결 능력이 급상승했습니다!"
+                    },
+                    {
+                        text: "인테리어 설계 및 건축 CAD 기초 실습 동아리에 가입한다.",
+                        effects: { skill: +15, health: +5 },
+                        feedback: "도면 설계 및 기술 도구 활용 능력이 돋보이는 실무 역량을 다졌습니다!"
+                    },
+                    {
+                        text: "자율 스터디 동아리를 직접 만들어 친구들과 자격증을 스터디한다.",
+                        effects: { mental: +10, academic: +10 },
+                        feedback: "리더십을 발휘하여 주도적으로 자기계발 환경을 구축했습니다!"
+                    }
+                ]
+            },
+            {
+                id: 3,
+                tag: "멘탈 & 휴식",
+                icon: "fa-battery-three-quarters",
+                title: "갑작스러운 학업 슬럼프 극복",
+                desc: "모의고사 성적이 생각만큼 나오지 않아 사기가 약간 저하되었습니다. 주말 동안 어떻게 슬럼프를 극복하시겠습니까?",
+                choices: [
+                    {
+                        text: "오답 노트를 차분히 작성하며 부족한 개념이 무엇인지 과학적으로 분석해본다.",
+                        effects: { academic: +10, mental: +5 },
+                        feedback: "실수를 성장의 계기로 삼는 뛰어난 회복탄력성을 보였습니다!"
+                    },
+                    {
+                        text: "야외로 나아가 가벼운 운동을 하며 스트레스를 시원하게 날려버린다.",
+                        effects: { health: +15, mental: +10 },
+                        feedback: "신체 활동을 통해 마음의 짐을 덜고 신선한 에너지를 충전했습니다!"
+                    },
+                    {
+                        text: "진로 선생님과의 상담을 요청해 앞으로의 진로 로드맵을 다시 점검한다.",
+                        effects: { skill: +10, mental: +10 },
+                        feedback: "전문가의 조언으로 막막함을 해소하고 명확한 목표를 다시 설정했습니다!"
+                    }
+                ]
+            }
+        ];
+
+        let currentTRPGIndex = 0;
+
+        // Roadmap Career Data
+        const roadmaps = [
+            {
+                category: "it",
+                title: "IT & 소프트웨어 개발자",
+                icon: "fa-code",
+                badges: ["IT", "프로그래밍", "유망진로"],
+                certifications: ["정보처리기능사", "웹디자인기능사", "SQLD"],
+                path: "고교 실무 기초 → 정보처리기능사 취득 → SW관련학과 진학 또는 IT 아카데미 수료 → 백엔드/프론트엔드 개발자"
+            },
+            {
+                category: "field",
+                title: "실내 건축 & 인테리어 디자이너",
+                icon: "fa-compass-drafting",
+                badges: ["인테리어", "CAD", "기술현장"],
+                certifications: ["전산응용건축제도기능사", "실내건축기능사"],
+                path: "AutoCAD & 3D 기초 습득 → 실내건축기능사 취득 → 실목 현장 실습 & 포트폴리오 준비 → 공간 디자이너"
+            },
+            {
+                category: "office",
+                title: "스마트 사무 & 데이터 관리 전문가",
+                icon: "fa-file-excel",
+                badges: ["사무", "데이터", "범용성"],
+                certifications: ["컴퓨터활용능력 1/2급", "전산회계 1급", "MOS Master"],
+                path: "OA 프로그램 습득 → 컴퓨터활용능력 1급 취득 → 기업체 경영지원 및 데이터 분석 사무직"
+            }
+        ];
+
+        // --- Core Functions ---
+
+        // Switch Top Level Tabs
+        function switchTab(tabId) {
+            playSound('click');
+            const tabs = ['dashboard', 'trpg', 'quests', 'roadmap'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`nav-${t}`);
+                if (btn) {
+                    btn.classList.remove('bg-indigo-600', 'text-white');
+                    btn.classList.add('text-slate-400', 'hover:text-slate-200');
+                }
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-indigo-600', 'text-white');
+                activeBtn.classList.remove('text-slate-400', 'hover:text-slate-200');
+            }
+        }
+
+        // Render UI Elements
+        function updateUI() {
+            // Header & Dashboard Stats
+            document.getElementById('header-level').innerText = player.level;
+            document.getElementById('dash-level').innerText = player.level;
+            document.getElementById('header-user-name').innerText = player.name;
+            document.getElementById('dash-name').innerText = player.name;
+            document.getElementById('header-xp').innerText = player.xp;
+            document.getElementById('dash-xp').innerText = player.xp;
+            document.getElementById('header-next-xp').innerText = player.nextXp;
+            document.getElementById('dash-next-xp').innerText = player.nextXp;
+
+            const xpPct = Math.min(100, Math.floor((player.xp / player.nextXp) * 100));
+            document.getElementById('dash-xp-bar').style.width = `${xpPct}%`;
+
+            // Stat Values & Progress Bars
+            ['academic', 'skill', 'health', 'mental'].forEach(stat => {
+                const val = Math.min(100, Math.max(0, player.stats[stat]));
+                document.getElementById(`stat-${stat}`).innerText = val;
+                document.getElementById(`bar-${stat}`).style.width = `${val}%`;
+            });
+
+            // Analyze Aptitude Tendency
+            updateCareerTendency();
+
+            // Render Quests
+            renderQuests();
+
+            // Render TRPG
+            renderTRPG();
+
+            // Render Roadmaps
+            renderRoadmaps('all');
+        }
+
+        // Add Experience & Level Up Logic
+        function addXP(amount) {
+            player.xp += amount;
+            if (player.xp >= player.nextXp) {
+                player.xp -= player.nextXp;
+                player.level += 1;
+                player.nextXp = Math.floor(player.nextXp * 1.3);
+                showLevelupModal();
+            }
+            updateUI();
+        }
+
+        // Level Up Modal Controls
+        function showLevelupModal() {
+            playSound('levelup');
+            document.getElementById('levelup-lvl-num').innerText = player.level;
+            document.getElementById('modal-levelup').classList.remove('hidden');
+        }
+
+        function closeLevelupModal() {
+            playSound('click');
+            document.getElementById('modal-levelup').classList.add('hidden');
+        }
+
+        // Edit Player Name Modal
+        function openEditNameModal() {
+            playSound('click');
+            document.getElementById('input-new-name').value = player.name;
+            document.getElementById('modal-edit-name').classList.remove('hidden');
+        }
+
+        function closeEditNameModal() {
+            playSound('click');
+            document.getElementById('modal-edit-name').classList.add('hidden');
+        }
+
+        function savePlayerName() {
+            const newName = document.getElementById('input-new-name').value.trim();
+            if (newName) {
+                player.name = newName;
+                updateUI();
+                closeEditNameModal();
+            }
+        }
+
+        // Mental Wellness Quotes Switcher
+        function changeQuote() {
+            playSound('click');
+            const rand = Math.floor(Math.random() * wellnessQuotes.length);
+            document.getElementById('wellness-quote').innerText = `"${wellnessQuotes[rand]}"`;
+        }
+
+        // Career Aptitude Recommendation Logic
+        function updateCareerTendency() {
+            const { academic, skill, health, mental } = player.stats;
+            const maxVal = Math.max(academic, skill, health, mental);
+            let title = "균형 잡힌 성장형 탐구자";
+
+            if (maxVal === skill && skill > 60) {
+                title = "실무 능력 중심의 전문 기술가형";
+            } else if (maxVal === academic && academic > 60) {
+                title = "학술 지식 탐구 & 전략가형";
+            } else if (maxVal === health && health > 60) {
+                title = "지치지 않는 에너자이저 루티너형";
+            } else if (maxVal === mental && mental > 60) {
+                title = "강인한 회복탄력성의 리더형";
+            }
+
+            document.getElementById('career-recommendation-title').innerText = title;
+        }
+
+        // --- Quests System ---
+        function renderQuests() {
+            const container = document.getElementById('quest-list-container');
+            container.innerHTML = '';
+
+            const doneCount = quests.filter(q => q.done).length;
+            document.getElementById('quest-count').innerText = `완료 ${doneCount} / 전체 ${quests.length}`;
+
+            quests.forEach(quest => {
+                const qEl = document.createElement('div');
+                qEl.className = `p-4 rounded-xl border transition-all flex items-center justify-between ${
+                    quest.done 
+                    ? 'bg-slate-900/30 border-slate-800 opacity-60' 
+                    : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                }`;
+
+                let catBadge = '';
+                if (quest.category === 'academic') catBadge = '<span class="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">학업</span>';
+                else if (quest.category === 'skill') catBadge = '<span class="text-xs px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">자격증</span>';
+                else if (quest.category === 'health') catBadge = '<span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">루틴</span>';
+                else catBadge = '<span class="text-xs px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">멘탈</span>';
+
+                qEl.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <button onclick="toggleQuest(${quest.id})" class="w-6 h-6 rounded-lg border ${quest.done ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'border-slate-600 hover:border-indigo-400'} flex items-center justify-center transition">
+                            ${quest.done ? '<i class="fa-solid fa-check text-xs font-bold"></i>' : ''}
+                        </button>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                ${catBadge}
+                                <span class="text-sm font-semibold ${quest.done ? 'line-through text-slate-500' : 'text-slate-200'}">${quest.title}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">+${quest.xp} XP</span>
+                        <button onclick="deleteQuest(${quest.id})" class="text-xs text-slate-500 hover:text-rose-400 transition">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(qEl);
+            });
+        }
+
+        function toggleQuest(id) {
+            const q = quests.find(item => item.id === id);
+            if (q) {
+                q.done = !q.done;
+                if (q.done) {
+                    playSound('complete');
+                    addXP(q.xp);
+                    // Increment corresponding stat
+                    player.stats[q.category] = Math.min(100, player.stats[q.category] + 3);
+                } else {
+                    playSound('click');
+                }
+                updateUI();
+            }
+        }
+
+        function handleAddQuest(e) {
+            e.preventDefault();
+            const titleInput = document.getElementById('quest-title-input');
+            const categoryInput = document.getElementById('quest-category-input');
+            const xpInput = document.getElementById('quest-xp-input');
+
+            const newQuest = {
+                id: Date.now(),
+                title: titleInput.value.trim(),
+                category: categoryInput.value,
+                xp: parseInt(xpInput.value) || 15,
+                done: false
+            };
+
+            quests.unshift(newQuest);
+            titleInput.value = '';
+            playSound('click');
+            updateUI();
+        }
+
+        function deleteQuest(id) {
+            playSound('click');
+            quests = quests.filter(q => q.id !== id);
+            updateUI();
+        }
+
+        // --- TRPG System ---
+        function renderTRPG() {
+            const sc = trpgScenarios[currentTRPGIndex];
+            document.getElementById('trpg-current-step').innerText = currentTRPGIndex + 1;
+            document.getElementById('trpg-total-step').innerText = trpgScenarios.length;
+
+            document.getElementById('scenario-tag').innerText = sc.tag;
+            document.getElementById('scenario-title').innerText = sc.title;
+            document.getElementById('scenario-description').innerText = sc.desc;
+            document.getElementById('scenario-icon').className = `fa-solid ${sc.icon}`;
+
+            const container = document.getElementById('choices-container');
+            container.innerHTML = '';
+
+            sc.choices.forEach((choice, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-800/80 text-left transition space-y-2 group";
+                btn.onclick = () => selectTRPGChoice(choice);
+
+                // Build Stat Effect text
+                let effectText = [];
+                if (choice.effects.academic) effectText.push(`학업 +${choice.effects.academic}`);
+                if (choice.effects.skill) effectText.push(`실무 +${choice.effects.skill}`);
+                if (choice.effects.health) effectText.push(`체력 +${choice.effects.health}`);
+                if (choice.effects.mental) effectText.push(`멘탈 +${choice.effects.mental}`);
+
+                btn.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <span class="text-sm font-semibold text-slate-200 group-hover:text-indigo-300 transition">${idx + 1}. ${choice.text}</span>
+                    </div>
+                    <div class="flex items-center space-x-2 text-xs font-bold text-indigo-400">
+                        <i class="fa-solid fa-arrow-up-right-dots"></i>
+                        <span>${effectText.join(' | ')}</span>
+                    </div>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function selectTRPGChoice(choice) {
+            playSound('complete');
+
+            // Apply Stat Effects
+            if (choice.effects.academic) player.stats.academic = Math.min(100, player.stats.academic + choice.effects.academic);
+            if (choice.effects.skill) player.stats.skill = Math.min(100, player.stats.skill + choice.effects.skill);
+            if (choice.effects.health) player.stats.health = Math.min(100, player.stats.health + choice.effects.health);
+            if (choice.effects.mental) player.stats.mental = Math.min(100, player.stats.mental + choice.effects.mental);
+
+            // Grant XP for completing scenario step
+            addXP(25);
+
+            // Move to next scenario or loop
+            currentTRPGIndex = (currentTRPGIndex + 1) % trpgScenarios.length;
+            updateUI();
+        }
+
+        function resetTRPG() {
+            playSound('click');
+            currentTRPGIndex = 0;
+            renderTRPG();
+        }
+
+        // --- Roadmap System ---
+        function renderRoadmaps(filter) {
+            const grid = document.getElementById('roadmap-cards-grid');
+            grid.innerHTML = '';
+
+            const filtered = filter === 'all' ? roadmaps : roadmaps.filter(r => r.category === filter);
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-4 flex flex-col justify-between";
+
+                const certsHtml = item.certifications.map(c => `<span class="px-2.5 py-1 bg-slate-800 text-xs font-semibold text-amber-300 rounded-lg border border-slate-700">${c}</span>`).join(' ');
+
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl">
+                                <i class="fa-solid ${item.icon}"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-slate-100">${item.title}</h3>
+                                <div class="flex space-x-1 mt-1">
+                                    ${item.badges.map(b => `<span class="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">${b}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="text-xs font-bold text-slate-400 block mb-2">추천 주요 자격증</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${certsHtml}
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="text-xs font-bold text-slate-400 block mb-1">성장 로드맵</span>
+                            <p class="text-xs text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800/80 leading-relaxed">
+                                ${item.path}
+                            </p>
+                        </div>
+                    </div>
+
+                    <button onclick="switchTab('quests')" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-xs text-indigo-300 font-bold rounded-xl transition flex items-center justify-center space-x-1">
+                        <span>관련 퀘스트 도전하기</span>
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterRoadmap(category) {
+            playSound('click');
+            const btns = document.querySelectorAll('.roadmap-filter-btn');
+            btns.forEach(b => {
+                b.classList.remove('bg-indigo-600', 'text-white');
+                b.classList.add('text-slate-400');
+            });
+            event.target.classList.add('bg-indigo-600', 'text-white');
+            event.target.classList.remove('text-slate-400');
+
+            renderRoadmaps(category);
+        }
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            updateUI();
+        };
+    </script>
+</body>
+</html>
